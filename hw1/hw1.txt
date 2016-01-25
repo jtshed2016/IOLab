@@ -1,0 +1,10 @@
+Bash commands
+1. Change directory - cd <destination directory/path/ ..>
+2. Create directory - mkdir <directory name>
+3. Rename directory - mv <old name> <new name>
+4. List contents - ls
+5. Move file to new location: mv <file name> <destination directory / ../>
+6. Copy file to new location: cp <path/filename> <newpath/newfilename>
+7. Search for a string in a file: grep "<string>" <filename>
+8. Access shell of remote machine: ssh <username@address>
+
