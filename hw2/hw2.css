@@ -1,0 +1,143 @@
+/*----------------- CSS RESET ------------------*/
+/*reset code borrowed from 2/3 lab*/
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+body {
+	line-height: 1;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+/*------------HW2 CSS below -------------*/
+
+html {
+	background-color: #f0f0f5;
+	font-family: sans-serif;
+}
+
+header{
+	width: 100%;
+	text-align: center;
+}
+
+em {
+	font-style: italic;
+}
+strong {
+	font-weight: bold;
+	color: #ff0000;
+}
+nav {
+	max-width: 10%;
+	height: 100%;
+	float: left;
+	display: block;
+	/*margin: .25em;
+	border = .25em;
+	padding: 10px;*/
+
+	border-color: #ffffff;
+	background-color: #f0f0f5;
+}
+nav *{
+	display: block;
+	font-weight: bold;
+	background-color: #ffe5ff;
+}
+footer {
+	display: block;
+	text-align: center;
+	float: right;
+	width: 100%;
+	padding: 10px;
+}
+
+footer *{
+	font-weight: bold;
+	background-color: #ffe5ff;
+}
+
+article {
+	max-width: 90%;
+	float: right;
+	display: block;
+	/*padding: .25em;*/
+}
+h1 {
+	font-size: 2em;
+	font-weight: bold;
+}
+
+h2 {
+	font-size: 1.25em;
+	font-weight: bold;
+}
+
+h6 {
+	font-size: .75em;
+}
+
+p {
+	margin-top, margin-bottom: 1em;
+}
+
+p, h1, h2, h6, img {
+	padding: .25em;
+}
+
+aside {
+	font-size: 2em;
+	font-style: italic;
+	color: #666666;
+	width: 50%;
+	margin-top, margin-bottom: .5em;
+}
+#bummed {
+	float: right;
+}
+
+#knocking {
+	float: left;
+}
+
+img {
+	max-width: 50%;
+	text-align: center;
+}
