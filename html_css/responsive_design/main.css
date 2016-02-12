@@ -47,3 +47,73 @@ table {
 /*----------------- CSS RESET ------------------*/
 
 /*Your main CSS should go here*/
+html {
+	font-family: 'Arimo', sans-serif;
+	background-color: #428000;
+}
+
+header, footer{
+	text-align: center;
+	margin: 1em;
+}
+
+header * {
+	margin: .2em;
+}
+
+/*nav {
+	border: 1px solid #ffffff;
+test for stylesheet loading */
+
+h1, h2, h3, h4, h5, h6 {
+	font-family: 'Anton';
+	color: #b30000;
+	text-align: center;
+}
+h1 {
+	font-size: 2em;
+}
+a {
+	color: #ff9900;
+}
+.main-container {
+	width: 100%;
+}
+
+.project {
+	margin-top: 10px;
+	width: 32%;
+	display: inline-block;
+	vertical-align: top;
+	border-style: solid;
+	border-width: 1px;
+	border-color: #666666;
+}
+
+.project * {
+	margin: .2em;
+}
+
+/*.project-title {
+	position: relative;
+}*/
+
+.project-image {
+	text-align: center;
+}
+
+.project-image img {
+	max-width: 100%;
+	/*max-height: 150px;*/
+	display: inline-block;
+
+}
+.project-detail p {
+	max-width: 100%;
+	/*display: inline-block;*/
+}
+#contactinfo {
+	font-family: 'Anton';
+	color: #b30000;
+}
+
