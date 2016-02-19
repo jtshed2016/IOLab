@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>To-Do for To-Day</title>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+		<script type="text/javascript" src="script.js"></script>
+		<link rel="stylesheet" type="text/css" href="todo.css">
+	</head>
+
+	<body>
+		<header>
+			<h1>My To-Do for To-Day</h1>
+		</header>
+			<div id="maindiv">
+				<div class="itemslist" id="open">
+					<h3>To-Do</h3>
+					<ul id="todolist">
+					</ul>
+				</div>
+
+				<div class="itemslist" id="complete">
+					<h3>Completed</h3>
+					<ul id="donelist">
+					</ul>
+				</div>
+			</div>
+
+			<!--<div id="inputarea" 
+				<form id="newtodo" method="post" onsubmit="newListItem(newitem)">
+					<p>Enter a new to-do item below:</p>
+					<input type="txt" name="newitem">
+					<input type="submit" value="Enter">
+				</form>
+			-->
+			<textarea id="newlistitem" name="newlistitem" rows="5" cols="50"></textarea>
+			<button type="button" onclick="newListItem()">Add to List</button>
+			</div>
+
+			<div id="instructions">
+				<h3>Instructions</h3>
+				<p>Add an item in the text field to add it to the "To-Do" list.  Click its "done" button to move it to the "completed" list.  Add the "Undo" button to move it back to the "To-Do" list.</p>
+			</div>
+	</body>
+
+</html>
