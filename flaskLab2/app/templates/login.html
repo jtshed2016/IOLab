@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}
+	Login
+{% endblock %}
+
+{% block content %}
+<h1>Hi There! Welcome to Ape Ask, the leading online survey site.</h1>
+<div class="main-container">
+	<h3>Let's get you logged in!</h3>
+	<form action="/login" method='post'>
+		<label for="name">Name</label>
+		<input name="name" id="name" type="text">
+		<br>
+		<label for="email">E-mail</label>
+		<input name="email" id="name" type="text">
+		<input class="action-button" id="login" type="submit" value="Submit">
+	</form>
+</div>
+
+{% endblock %}
