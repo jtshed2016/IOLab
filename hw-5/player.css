@@ -1,0 +1,160 @@
+/*----------------- CSS RESET ------------------*/
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+body {
+	line-height: 1;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+/*----------------- CSS RESET ------------------*/
+html {
+	font-family: 'Oswald';
+}
+header {
+	background-color: #ffccff;
+}
+
+header * {
+	text-align: center;
+}
+
+header textarea {
+	margin: 0;
+	display: inline-block;
+	background-color: #ffe6ff;
+	border-style: solid;
+	border-radius: 5px;
+	border-width: 2px;
+}
+
+button {
+	border-style: solid;
+	border-radius: 5px;
+	border-width: 2px;
+	font-family: 'Oswald';
+}
+
+#resultslist button {
+	background-color: #ff8000;
+	border-color: #b3ffd9;
+}
+
+#playlistbar button {
+	background-color: #00ff80;
+	border-color: #ffbf80;
+}
+
+h2 {
+	text-align: center;
+	font-size: 2em;
+}
+
+h3 {
+	text-align: center;
+	font-size: 1.5em;
+}
+
+.resulttitle {
+	font-size: .75em;
+	color: #333333;
+}
+
+.resultartist {
+	font-size: .5em;
+	font-style: italic;
+	color: #404040;
+}
+
+.resultimage {
+	display: block;
+}
+
+#playlistbar {
+	width: 25%;
+	background-color: #b3ffd9;
+	display: inline-block;
+	float: left;
+	margin-bottom: 2em;
+	/*bottom margin to clear player*/
+}
+
+/*#playlist * {
+	background-color: #b3ffd9;
+}
+*/
+#resultslist {
+	background-color: #ffbf80;
+	width: 75%;
+	display: inline-block;
+	float: right;
+	margin-bottom: 2em;
+}
+
+.result {
+	/*margin: .2em; */
+	border-style: solid;
+	border-width: 2px;
+	border-color: #808080;
+	border-radius: 5px;
+	width: 32%;
+	height: 33%;
+	display: inline-block;
+}
+
+
+.playitem {
+	border-style: solid;
+	border-width: 2px;
+	border-color: #262626;
+	border-radius: 5px;
+}
+
+
+.playitem img {
+	width: 50px;
+	height: 50px;
+}
+
+
+img.resultimg {
+	text-align: center;
+	padding: .2em;
+}
