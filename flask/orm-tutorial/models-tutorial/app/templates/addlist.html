@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="section">
+<a href="{{ url_for('display_customer') }}">Home</a>
+<h3>Addresses for {{ customer }}</h3>
+
+<table>
+	<thead>
+		<tr>
+			<th>Number</th>
+			<th>Street Name</th>
+			<th>City</th>
+			<th>State</th>
+			<th>Zip</th>
+			<th>Current?</th>
+		</tr>
+	</thead>
+	{% for address in addresses %}
+		<tr>
+        	<td>{{ address.streetno }}</td>
+            <td>{{ address.streetname }}</td>
+            <td>{{ address.city }}</td>
+            <td>{{ address.state }}</td>
+            <td>{{ address.zipcode }}</td>
+            <td>{{ address.current }}</td>
+      	</tr>
+   {% endfor %}
+	</table>
+</div>
+
+{% endblock %}

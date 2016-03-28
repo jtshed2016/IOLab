@@ -7,6 +7,10 @@
     {% endif %}
     <!-- Compiled and minified CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.5/css/materialize.min.css">
+    <!--setting "display" to "inline" for "select" menus, otherwise they don't show up for some reason-->
+    <style>
+    	select {display:inline;}
+    </style>
   </head>
   <body>
     {% block content %}{% endblock %}

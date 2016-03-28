@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Select Customer</h3>
+
+
+<form name="cust_form" action="/addresslist" method="get">
+	<select style="display:inline" name="cust_select">
+	<!--this had "display:none" by default.  No idea why.-->
+		{% for customer in customers %}
+			<option value ="{{ customer.id }}">{{ customer.company }}</option>
+		{% endfor %}
+	</select>
+	<input type="submit" value="Select">
+</form>
+
+{% endblock %}

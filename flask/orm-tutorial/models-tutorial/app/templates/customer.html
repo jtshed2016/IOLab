@@ -18,11 +18,35 @@
           Customer email:<br>
           {{ form.email(size=120) }}<br>
         </p>
+        <p>
+          Customer phone:<br>
+          {{ form.phone(size=12) }}<br>
+        </p>
       </div>
-      <div class="divider"></div>
+      <div class="divider"></div> 
       <div class="section">
-        <!-- Additional form fields for the Address should go here -->
+        <p>
+          Street Number:<br>
+          {{ form.streetno(size=12) }}<br>
+        </p>
+        <p>
+          Street Name:<br>
+          {{ form.streetname(size=12) }}<br>
+        </p>
+        <p>
+          City:<br>
+          {{ form.city(size=12) }}<br>
+        </p>
+        <p>
+          State:<br>
+          {{ form.state(size=12) }}<br>
+        </p>
+        <p>
+          ZIP:<br>
+          {{ form.zipcode(size=12) }}<br>
+        </p>
       </div>
+
       <p><input type="submit" value="Create Customer"></p>
     </form>
   </div>
