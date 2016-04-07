@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3>Robbins MS {{ ms.id }} - {{ ms.title }}</h3>
+<div class="section">
+
+{% if ms.title_alt %}
+<p>Alternate Title: {{ ms.title_alt }}</p>
+{% endif %}
+
+{% if ms.title_uni %}
+<p>Uniform Title: {{ ms.title_uni }}</p>
+{% endif %}
+
+<p>Date: {{ ms.date1 }}</p>
+
+{% if ms.date2 %}
+<p>End Date: {ms.date2}</p>
+{% endif %}
+
+<p>Language: {{ ms.language }}</p>
+
+{% if ms.publisher %}
+<p>Published by: {{ ms.publisher }}</p>
+{% endif %}
+
+<p>Origin: </p>
+{% for place in ms.places %}
+<a href="{{ url_for('view_place', place.id) }}">{{ place.name }}</a>
+{% endfor %}
+
+{% if ms.summary %}
+<h6>Summary</h6>
+<p>{{ ms.summary }}</p>
+{% endif %}
+
+<p>Number of Volumes: {{ ms.volumes }}</p>
+
+{% for volume in ms.volumes %}
+
+<p>Material: {{ volume.support }}</p>
+
+<p>Extent: {{ volume.extent }} {{volume.extent_unit }}</p>
+
+<ul>
+{% if volume.supportheight and volume.supportwidth %}
+<li>Support dimensions: {{volume.supportheight}} x {{ volume.supportwidth }} {{volume.unit}}</li>
+{% endif %}
+
+{% if volume.writtenheight and volume.writtenwidth %}
+<li>Written area: {{volume.writtenheight}} x {{volume.writtenwidth}} {{volume.unit}}</li>
+{% endif %}
+
+{% if volume.boundheight and volume.boundwidth %}
+<li>Bound to {{volume.boundheight}} x {{volume.boundwidth}} {{volume.unit}}</li>
+{% endif %}
+</ul>
+
+{% if volume.quires %}
+<p>Register of Quires: {{ volume.quires }}</p>
+{% endif %}
+
+{% endfor %}
+</div>
+
+
+<!--canvases for d3 visualizations-->
+<div class="section"
+<svg id="textvis">
+</div>
+
+<div class="section"
+<svg id="relationvis">
+</div>
+
+
+
+</div>
+{% endblock %}
