@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+		<table>
+		<tr>
+			<td>Title</td>
+			<td>Shelfmark</td>
+			<td>Date 1</td>
+			<td>Date 2</td>
+			<td>Date Type</td>
+			<td>Language</td>
+			<td>Volumes</td>
+		</tr>
+		{% for record in recs %}
+		<tr>
+			<td>{{record.titles.filter_by(title_type='main').first()}}</td>
+			<td><a href="ms{{record.id}}">{{record.shelfmark}}</a></td>
+			<td>{{record.date1}}</td>
+			<td>{{record.date2}}</td>
+			<td>{{record.datetype}}</td>
+			<td>{{record.language}}</td>
+			<td>{{record.num_volumes}}</td>
+		</tr>
+		{% endfor %}
+		</table>
+{% endblock %}
+
+
