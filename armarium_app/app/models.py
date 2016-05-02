@@ -6,6 +6,12 @@ has_watermark = db.Table('has_watermark',
 	db.Column('wm_id', db.Integer, db.ForeignKey('watermark.id'))
 	)
 
+#association table for manuscript and place
+has_place = db.Table('has_place',
+	db.Column('ms_id', db.Integer, db.ForeignKey('manuscript.id')),
+	db.Column('place_id', db.Integer, db.ForeignKey('place.id'))
+	)
+
 
 #the central entity of the system, representing a unified textual item
 class manuscript(db.Model):
@@ -15,8 +21,6 @@ class manuscript(db.Model):
 	date2 = db.Column(db.Integer)
 	datetype = db.Column(db.Integer)
 	language = db.Column(db.String(60))
-	#pub_place = db.Column(db.String(50))
-	#need to break out pub_place and make its own entity
 	summary = db.Column(db.String(1000))
 	#520
 	ownership_history = db.Column(db.String(1000))
@@ -40,6 +44,10 @@ class manuscript(db.Model):
 	assoc_people = db.relationship('person_ms_assoc',
 		backref = 'ms',
 		lazy='dynamic')
+	places = db.relationship('place',
+		secondary = has_place,
+		backref = db.backref('mss', lazy='dynamic')
+		)
 
 
 	def __repr__(self):
@@ -64,6 +72,9 @@ class volume(db.Model):
 	quire_register = db.Column(db.String(60))
 	phys_arrangement = db.Column(db.String(60))
 	decoration = db.Column(db.String(1000))
+	contents = db.relationship('content_item', 
+		backref = 'volume', 
+		lazy='dynamic')
 
 	ms_id = db.Column(db.Integer, db.ForeignKey('manuscript.id'))
 	
@@ -72,7 +83,6 @@ class volume(db.Model):
 class content_item(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	text = db.Column(db.String(1000))
-	#label = db.Column(db.string(20))
 	fol_start_num = db.Column(db.Integer)
 	fol_start_side = db.Column(db.String(1))
 	fol_end_num = db.Column(db.Integer)
@@ -125,4 +135,14 @@ class watermark(db.Model):
 
 	def __repr__(self):
 		return '<watermark Briquet ' + self.name + str(self.id) + '>'
+
+class place(db.Model):
+	id = db.Column(db.Integer, primary_key = True)
+	place_name = db.Column(db.String(60))
+	place_type = db.Column(db.String(10))
+	lat = db.Column(db.Float)
+	lon = db.Column(db.Float)
+
+	def __repr__(self):
+		return '<place ' + self.place_name + ' (' + self.place_type + ')>'
 

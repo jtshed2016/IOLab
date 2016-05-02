@@ -45,8 +45,11 @@ table {
 }
 
 /*----------------- CSS RESET ------------------*/
-body {
+html, body {
 	background-color: #FEFAE9;
+	height: 100%;
+	margin: 0;
+	padding: 0;
 }
 
 #wrapper {
@@ -64,14 +67,32 @@ h1, h2 {
 	font-style: italic;
 }
 
-h3, h4, h5, h6,{
+h3, h4, h5, h6 {
 	font-family: "Times New Roman";
 	color: #3F3E3A;
 }
 
-p{
+h3 {
+	font-size: 1.5em;
+	margin-left: .5em;
+}
+
+h4 {
+	font-size: 1.2em;
+}
+
+p, td, th {
 	color: #3F3E3A;
 	font-family: "Times New Roman";
+	font-size: 1em;
+}
+
+em {
+	font-style: italic;
+}
+
+header {
+	text-align: center;
 }
 
 nav a {
@@ -82,12 +103,46 @@ nav a {
 
 }
 
-.section {
+#collectionmap {
+	height: 60%;
+	width: 75%;
+	margin: .5em;
+	display: inline-block;
+	text-align: center;
+}
+
+#map {
+	height: 100%;
+	width: 100%;
+	text-align: right;
+}
+
+.section, .mapholder {
 	margin: .75em;
 	border-style: solid;
 	border-width: 1px;
 	border-color: #000000;
+	padding: .5em;
 }
+
+.mapholder {
+	text-align: center;
+	height: 100%;
+}
+
+.placemapholder {
+	text-align: right;
+	display: inline-block;
+	width: 48%;
+}
+
+.mstable {
+	vertical-align: top;
+	text-align: left;
+	display: inline-block;
+	width: 48%;
+}
+
 
 header {
 	margin: .5em;
@@ -99,12 +154,71 @@ footer {
 	border-width: 1px;
 	border-color: #000000;
 	padding: .5em;
+	margin: .5em;
 }
 footer *{
 	display: inline-block;
+	margin: .5em;
 }
 
 img.logo {
 	height: 49px;
 }
 
+table, th, td {
+	vertical-align: top;
+	border-width: 2px;
+	border-style: solid;
+	border-color: #C5C3BC;
+	border-collapse: collapse;
+	padding: 3px;
+	margin: 2px;
+}
+
+th *{
+	font-weight: bold;
+}
+
+
+b {
+	font-weight: bold;
+}
+
+
+
+/* for D3 vis */
+.node {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+.link {
+  stroke: #999;
+  stroke-opacity: .6;
+}
+
+.label {
+	font-family: sans-serif;
+	font-size: .5em;
+}
+
+#textvis, #relationvis {
+	max-width: 50%
+	max-height: 100%;
+	text-align: center;
+}
+
+#contentsdiv {
+	overflow-y: scroll;
+	height: 50%;
+	margin: .5em;
+	border-style: solid;
+	border-color: #3F3E3A;
+	border-width: 2px;
+}
+/*
+#graphcanvas {
+	max-width: 50%
+	max-height: 100%;
+}
+*/

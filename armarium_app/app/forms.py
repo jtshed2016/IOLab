@@ -7,3 +7,7 @@ class MsForm(Form):
 	shelfmark = StringField('shelfmark', validators=[DataRequired()])
 	mstitle = StringField('mstitle', validators=[DataRequired()])
 	mstitle_var = StringField('mstitle')
+
+
+class SearchForm(Form):
+	searchfield = StringField('query', validators=[DataRequired()])

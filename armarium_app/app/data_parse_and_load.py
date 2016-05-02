@@ -1,27 +1,35 @@
 #load necessary libraries
-
-import json
-import re
-import csv
+import json, re, csv, os
 from urllib import urlopen
 from bs4 import BeautifulSoup
 
+relpath = os.path.dirname(__file__)
+
 #get existing manuscript data in JSON format
-sourcefile = 'trial_II160119.json'
+sourcefile = os.path.join(relpath, 'trial_II160119.json')
 sourceobj = open(sourcefile)
 sourcedict = json.load(sourceobj)
 sourceobj.close()
 
 #get reference dictionaries for country, language, association codes
-countryObj = open('loccountrycodes.json')
-langObj = open('loclangcodes.json')
-relObj = open('locrelcodes.json')
+countryObj = open(os.path.join(relpath, 'loccountrycodes.json'))
+langObj = open(os.path.join(relpath,'loclangcodes.json'))
+relObj = open(os.path.join(relpath,'locrelcodes.json'))
 countryCodesDict = json.load(countryObj)
 countryCodesInverted = {countryCodesDict[key]: key for key in countryCodesDict}
 langCodesDict = json.load(langObj)
 relCodesDict = json.load(relObj)
 regionList = ['Northern', 'Southern', 'Central', 'Eastern', 'Western']
+numerals = {'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5, 'VI': 6, 'VII': 7, 'VIII': 8, 'IX': 9, 'X': 10}
 
+
+placeCache = {}
+#store places here after call to server; prevent unnecessary multiple calls
+
+##################################################
+#API keys for external services
+#geonames
+key_geonames = 'jtshed_geo2015'
 
 ##################################################
 #define regular expressions for extracting data
@@ -110,7 +118,25 @@ motifpatt = re.compile(r'Motif: ([\S ]*?)[|\n]')
 onedate = re.compile(r'(?P<date1>[0-9]+)\??')
 twodate = re.compile(r'(?P<ca1>ca\. ?)?(?P<date1>[0-9]+)\??-(?P<ca2>ca\. ?)?(?P<date2>[0-9]+)\??')
 centurypat = re.compile('[0-9]+(?=th)')
+##
 
+##patterns for extracting contents from 505 field
+#for identifying folio markers
+contentsstring = r'[Ff]ol\. ?[0-9IVXLivxlvrab -]*'
+contentspat = re.compile(contentsstring)
+
+#for finding and eliminating leading punctuation
+beginstring = r'^ ?[:.)\]] ?'
+beginpat = re.compile(beginstring)
+
+#for finding and eliminating trailing punctuation
+endstring = r';?[ -]*$'
+endpat = re.compile(endstring)
+
+#for eliminating trailing numbers at end
+trailingnumstring = r' [0-9]{1,2}\. ?$'
+trailnumpat = re.compile(trailingnumstring)
+##
 
 ########################################################
 #field-specific processing functions
@@ -142,15 +168,19 @@ def getStructuredData(field008):
 
 	return returnDict
 
-def getPlaceandPublisher(field260, country):
+def getPlace(field260, country):
 	#gets location information from field 260, comparing to country from field 008
 	#returns dict with additional locations and publisher, if in 260
-	returnDict = {'places': {}}
+	returnDict = {'places': []}
 
 	place = field260.strip('[]').split('|')[0].strip('?,[]]: ')
+
+	if place == '':
+		return None
 	if len(re.split('[,[\]()?]+', place)) == 1:
 		if (place.split(' ')[0] in regionList) and (place.split(' ')[1] == country):
 		#ignore if this is the same as in field 008
+		#discards a more specific region (e.g. "Western...") of a country
 			pass
 		elif ' and ' in place:
 		#evaluate multiple countries in "and" clause
@@ -159,7 +189,11 @@ def getPlaceandPublisher(field260, country):
 				#discard if it's the same as assigned country
 					pass
 				elif segment.strip('?,[]]: ') in countryCodesInverted:
-					returnDict['places'][segment.strip('?,[]]: ')] = 'country'
+					placeItem = {'name': segment.strip('?,[]]: '), 'type':'country'}
+					placeCoords = get_coords(placeItem['name'])
+					placeItem['lat'] = placeCoords['lat']
+					placeItem['lon'] = placeCoords['lon']
+					returnDict['places'].append(placeItem)
 		elif (' or ') in place:
 		#evaluate multiple countries in "or" clause
 			for segment in place.split(' or '):
@@ -167,9 +201,19 @@ def getPlaceandPublisher(field260, country):
 				#discard if it's the same as assigned country
 					pass
 				elif segment.strip('?,[]]: ') in countryCodesInverted:
-					returnDict['places'][segment.strip('?,[]]: ')] = 'country'
+					placeItem = {'name': segment.strip('?,[]]: '), 'type':'country'}
+					placeCoords = get_coords(placeItem['name'])
+					placeItem['lat'] = placeCoords['lat']
+					placeItem['lon'] = placeCoords['lon']
+					returnDict['places'].append(placeItem)
+
+
 		elif ((place not in countryCodesInverted) and (re.search('[Ss]\.[Ll]', place) == None)):
-			returnDict['places'][place] = 'area'
+			placeItem = {'name': place, 'type':'area'}
+			placeCoords = get_coords(placeItem['name'])
+			placeItem['lat'] = placeCoords['lat']
+			placeItem['lon'] = placeCoords['lon']
+			returnDict['places'].append(placeItem)
 	else:
 		for segment in re.split('[,[\]()?]+', place):
 			if (
@@ -180,15 +224,33 @@ def getPlaceandPublisher(field260, country):
 				(segment.strip() not in countryCodesInverted)
 			):
 						
-				returnDict['places'][segment.strip()] = 'area'
+				placeItem = {'name': segment.strip('?,[]]: '), 'type':'area'}
+				placeCoords = get_coords(placeItem['name'])
+				placeItem['lat'] = placeCoords['lat']
+				placeItem['lon'] = placeCoords['lon']
+				returnDict['places'].append(placeItem)
 	
-	#if pubpatt.search(recs[record][field][0]):
-	#	returnDict['publisher'] = pubpatt.search(recs[record][field][0]).group()
-	if pubpatt.search(field260):
-		returnDict['publisher'] = pubpatt.search(field260)
-	else:
-		returnDict['publisher'] = None
 	return returnDict
+
+def get_coords(placename):
+	###LIVE SERVER CALL
+	#Sends place name from record to Geonames API, retrieves latitude and longitude
+
+	namequery = 'http://api.geonames.org/searchJSON?q=' + placename + '&maxRows=10&username=' + key_geonames
+	print 'Call to server'
+	try:
+
+		namerecords = urlopen(namequery).read().decode("utf-8")
+		responsedict = json.loads(namerecords)
+		#GeoNames brings up "New England" as first request for "England", so substitute 'United Kingdom'
+		if placename == 'England':
+			return {'lat': responsedict['geonames'][1]['lat'], 'lon': responsedict['geonames'][1]['lng']}
+		else:
+			return {'lat': responsedict['geonames'][0]['lat'], 'lon': responsedict['geonames'][0]['lng']}
+	except:
+		print 'Call to server failed'
+		
+		return {'lat': None, 'lon': None}
 
 def getTitles(titleField, titleType):
 	#takes title fields and returns cleaned up titles with appropriate values
@@ -418,18 +480,21 @@ def getBriq(number):
 	baseurl = 'http://www.ksbm.oeaw.ac.at/_scripts/php/loadRepWmark.php?rep=briquet&refnr='
 	endurl = '&lang=fr'
 	targeturl = baseurl + number + endurl
-	#print 'Simulated Briquet request fired'
-	###
-	#actual URL request turned off now
-	#page = urlopen(targeturl)
-	#soup = BeautifulSoup(page, "html.parser")
-	#motiftext = soup.find('td', class_='wm_text').get_text()
-	###
-
 	
-	#return (motifpatt.search(motiftext).group(1).strip(), targeturl)
-	return ('dummyname', targeturl)
+	##Set 1: actual request to server (comment out to avoid)
+	##
+	print 'Briquet request fired'
+	page = urlopen(targeturl)
+	soup = BeautifulSoup(page, "html.parser")
+	motiftext = soup.find('td', class_='wm_text').get_text()
+	return (motifpatt.search(motiftext).group(1).strip(), targeturl)
+	##
 
+	##Set 2: Don't make server call, return dummy name
+	##
+	#print 'Simulated Briquet request fired'
+	#return ('dummyname', targeturl)
+	##
 
 def get_person_dates(datestring):
 	returnDict = {'date1': None, 'date2': None, 'datetype': None}
@@ -513,14 +578,73 @@ def parsePerson(personField):
 				returnDict['relationship'].append(str(attribute[1].strip()))
 
 	if ',' in mainName:
-		returnDict['displayName'] = mainName.split(',')[1].strip() + ' ' + mainName.split(',')[0].strip()
+		returnDict['displayName'] = mainName.split(',')[1].strip(' .,') + ' ' + mainName.split(',')[0].strip(' .,')
 	if (returnDict['Numeration'] != None) and (returnDict['displayName'] != None):
 		returnDict['displayName'] = returnDict['displayName'] + ' ' + returnDict['Numeration']
 	if returnDict['displayName'] == None:
 		returnDict['displayName'] = mainName
 	return (mainName, returnDict)
 
+def parseContentsCoarse(inputString, matchList):
+	#Takes a string of unstructured contents, list of RE matches, and REs for subfields, final numbers, and front-back trimming
+	#Returns a list of dictionaries with key=foliation, value=contents
+	contentsList = []
+	for x in range(0, len(matchList)):
+		key = matchList[x].group(0)
+		start = matchList[x].end()
+		if len(matchList) - x >=2:
+			end = matchList[x+1].start()
+		else:
+			end = len(inputString)
+		#eliminate numbers at end
+		numberTrimmed = re.sub(trailnumpat, '', inputString[start:end])
+		#eliminate subfield markers
+		sectionString = re.sub(subfieldpat, '', numberTrimmed)
+		#get rid of leading punctuation
+		frontTrimmed = re.sub(beginpat, '', sectionString)
+		#get rid of unnecessary characters at the end
+		outputString = re.sub(endpat, '', frontTrimmed)
+		#switch 'blank' to correct field if it's been wrongly assigned
+		if key[-3:] == 'bla':
+			key = key[:-4]
+			outputString = 'bla' + outputString
+		contentsList.append({key: outputString})
+	return contentsList
+
+def parseContentsFine(folia):
+	#Takes string foliation of contents item and returns range of folia and sides
+	returnDict = {'startFol': None, 'startSide': None, 'endFol': None, 'endSide': None}
+	folnums = [match for match in re.finditer(r'(?P<num>[0-9]+)(?P<side>[rv]?)', folia)]
+	#issue here: can't decide between grabbing 'verso' into greedy Roman numeral pattern, or ignoring Roman
+	#numeral foliation...leaving out Roman numerals for now.  
+	#find matches of <number><side> pattern ,e.g. "12v" or "149r"
+
+	if len(folnums)==0:
+		print 'ERROR'
+		print(folia)
+
+	#add beginning leaf and side; should be in all
+	if len(folnums) >=1:
+		if folnums[0].group('num'):
+			returnDict['startFol'] = int(folnums[0].group('num'))
+		
+		if folnums[0].group('side'):
+			returnDict['startSide'] = folnums[0].group('side')
+
+	#add ending leaf and side, if there is one
+	if len(folnums) >1:
+		if folnums[1].group('num'):
+			returnDict['endFol'] = int(folnums[1].group('num'))
+		
+		if folnums[1].group('side'):
+			returnDict['endSide'] = folnums[1].group('side')
+	return returnDict
+
 #########################################################
+#########################################################
+#########################################################
+
+#chief function that calls all the other functions:
 
 def load(recs):
 	outputdict = {}
@@ -531,23 +655,41 @@ def load(recs):
 		#create dictionary for each one, populated with initial empty arrays for multiple values(external entities)
 		#add none for all values to avoid key errors
 		outputdict[record] = {'shelfmark': None, 'volumes': None, 'language': None, 'date1': None, 
-		'date2': None, 'datetype': None, 'publisher': None, 'places': {}, 'titles': [], 'people': {}}
-
+		'date2': None, 'datetype': None, 'datecertain': True, 'publisher': None, 'places': [], 
+		'titles': [], 'people': {}, 'contents': [], 'summary': None, 'ownership_history': None}
+		
 
 		#get structured data from field 008
 		#print(record)
 		structuredData = getStructuredData(recs[record]['008'][0])
+		#iterate over components retrieved from 008
 		for infoComp in structuredData:
+			#'country' is treated differently: need to get latitude and longitude
 			if (infoComp == 'country') and (structuredData[infoComp] != None):
-				outputdict[record]['places'][structuredData['country']] = 'country'
+				if structuredData[infoComp] in placeCache:
+					#check to see whether it's in the cache first to avoid unnecessary server call
+					print 'place cache hit'
+					outputdict[record]['places'].append(placeCache[structuredData[infoComp]])
+				else:
+					#get coords from server
+					place008 = {'name': structuredData[infoComp], 'type': 'country'}
+					###LIVE CALL TO SERVER
+					place008coords = get_coords(place008['name'])
+					place008['lat'] = place008coords['lat']
+					place008['lon'] = place008coords['lon']
+					#add to output dict, and add to cache
+					outputdict[record]['places'].append(place008)
+					placeCache[place008['name']] = place008
+
 			elif (infoComp == 'country') and (structuredData[infoComp] == None):
 				pass
+			#other info components go straight into output dict
 			else:
 				outputdict[record][infoComp] = structuredData[infoComp]
 		
 
 		#iterate over fields and get all information
-		#sort keys to ensure necessary information is available further down the line
+		#sort keys to ensure prerequisite information is available when needed
 		for field in sorted(recs[record]):
 
 			
@@ -557,15 +699,31 @@ def load(recs):
 			elif '099' in field:
 				outputdict[record]['shelfmark'] = recs[record][field][0].strip('.; ,')
 
-			#get place and publisher data
+			#get place data
 			if ('260' in field):
 				#feed field 260 and country into function
-				locInfo = getPlaceandPublisher(recs[record][field][0], 
+				locInfo = getPlace(recs[record][field][0], 
 					countryCodesDict[recs[record]['008'][0][15:18].strip()])
 				
-				for loc in locInfo['places']:
-					outputdict[record]['places'][loc] = locInfo['places'][loc]
-				outputdict[record]['publisher'] = locInfo['publisher']
+				if locInfo != None:
+					for loc in locInfo['places']:
+						outputdict[record]['places'].append(loc)
+				
+				if pubpatt.search(field):
+					outputdict[record]['publisher'] = pubpatt.search(field).group()
+				else:
+					outputdict[record]['publisher'] = None
+
+				#see if there are markers of uncertainty in the date, and adjust accordingly
+				#this sets the "dateCertain" value to True or False
+				#determines how the date is displayed in the manuscript view page, msview.html c. line 33
+				try:
+					date260 = recs[record][field][0].split('|c')[1]
+					if(('?' in date260) or ('--' in date260) or ('ca.' in date260) or ('cent' in date260)):
+						dateCertain = False
+				except:
+					#if the pattern doesn't work, remains "true" by default
+					pass
 
 			#get titles	
 			if ('240' in field) or ('245' in field):
@@ -595,7 +753,7 @@ def load(recs):
 			
 
 			#get AMREMM note field descriptions from fields 500
-			
+############			
 			if '500' in field:
 				#start with volume-sensitive ones; iterate over volumes in volumeInfo list
 				for volnum in range(1, outputdict[record]['volumes'] +1):
@@ -654,6 +812,8 @@ def load(recs):
 								else:
 									outputdict[record]['volumeInfo'][volnum-1]['arrangement'] = None
 
+			
+			#get person info from relevant main entry, subject, or added entry fields
 			if ('100' in field) or ('600' in field) or ('700' in field):
 				for personInstance in recs[record][field]:
 					personData  = parsePerson(personInstance)
@@ -664,16 +824,68 @@ def load(recs):
 						personData[1]['relationship'].append('subject')
 					outputdict[record]['people'][personData[0]] = personData[1]
 
-	
+			
 
+			
+			if '505' in field:
+				#print(recs[record][field])
+				#get content items (specifically listed textual elements with foliation and titles)
+				#contentsHolder declared in outermost loop, because there may be multiple 505 fields
+				
+				#see if there are separate items by volume;
+				
 
+				for contentChunk in recs[record][field]:
+					#set volume index (to determine what volume to assign contents to) to 0 by default
+					volIndex = 0
+					if re.search(r'^[Vv]olume (?P<number>[0-9IV])', contentChunk):
+						#print(re.search(r'^[Vv]olume (?P<number>[0-9IV])', contentChunk).group('number'))
+						contentsVolIndex = re.search(r'^[Vv]olume (?P<number>[0-9IV])', contentChunk).group('number')
+						try:
+						#get relevant volume number if Arabic numeral
+							volIndex = int(contentsVolIndex) -1
+						except ValueError:
+							#if Roman numeral, try to get corresponding Arabic
+							if contentsVolIndex in numerals:
+								volIndex = numerals[contentsVolIndex] -1
+							#otherwise, remains at default of zero
+							
+					#contentChunk: one item in the field 505 list, which may contain one or more content items
+					matches = [result for result in contentspat.finditer(contentChunk)]
+					smallContentsList = parseContentsCoarse(contentChunk, matches)
+					
+					for text in smallContentsList:
+						for key in text:
+							contentsHolder = {}
+							contentsHolder['text'] = text[key]
+							pagerange = parseContentsFine(key)
+							for pageItem in pagerange:
+								contentsHolder[pageItem] = pagerange[pageItem]
+							#print(parseContentsFine(key))
+							if 'contents' in outputdict[record]['volumeInfo'][volIndex]:
+								outputdict[record]['volumeInfo'][volIndex]['contents'].append(contentsHolder)
+							else:
+								outputdict[record]['volumeInfo'][volIndex]['contents'] = [contentsHolder]
+							
 
+			if '520' in field:
+				if len(recs[record][field]) >1:
+					print('Multiple 520!!!')
+				outputdict[record]['summary'] = recs[record][field][0]
 
+			if '561' in field:
+				if len(recs[record][field]) >1:
+					print('Multiple 561!!!')
+				outputdict[record]['ownership_history'] = recs[record][field][0]
+
+############
+#^top-level MARC field indent depth
 
 
 		#sanity check for volume info and collation; should break this out later to separate function
-			
-		#print(outputdict[record])
+		
+		#print outputdict[record]['volumeInfo']
+		print '\n'
 		if 'volumeInfo' not in outputdict[record]:
 			outputdict[record]['volumeInfo'] = []
 			#print(record, ': MISSING VOLUME INFO')
@@ -685,10 +897,10 @@ def load(recs):
 			for component in ['quires', 'arrangement']:
 				if component not in volumeItem:
 					volumeItem[component] = None;
-			if 'watermarks' not in volumeItem:
-				volumeItem['watermarks'] = []
+			for listComponent in ['watermarks', 'contents']:
+				if listComponent not in volumeItem:
+					volumeItem[listComponent] = []
 	return outputdict
-
 
 
 	

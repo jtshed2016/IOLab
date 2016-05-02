@@ -2,29 +2,28 @@
 
 {% block content %}
 
-
-		<table>
+	<div id="contentsdiv">
+		<table id="contentstable">
 		<tr>
 			<td>Title</td>
 			<td>Shelfmark</td>
-			<td>Date 1</td>
-			<td>Date 2</td>
-			<td>Date Type</td>
+			<td>Date</td>
 			<td>Language</td>
-			<td>Volumes</td>
 		</tr>
 		{% for record in recs %}
 		<tr>
 			<td>{{record.titles.filter_by(title_type='main').first()}}</td>
 			<td><a href="ms{{record.id}}">{{record.shelfmark}}</a></td>
+			{% if record.date2 %}
+			<td>{{record.date1}}-{{record.date2}}</td>
+			{% else %}
 			<td>{{record.date1}}</td>
-			<td>{{record.date2}}</td>
-			<td>{{record.datetype}}</td>
+			{% endif %}
 			<td>{{record.language}}</td>
-			<td>{{record.num_volumes}}</td>
 		</tr>
 		{% endfor %}
 		</table>
+	</div>
 {% endblock %}
 
 

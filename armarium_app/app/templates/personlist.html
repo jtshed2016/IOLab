@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+	<div id="contentsdiv">
+		<table id="contentstable">
+		<tr>
+			<td><b>Name</b></td>
+			<td><b>Dates</b></td>
+		</tr>
+		{% for person in people %}
+		<tr>
+			<td><a href="person{{ person.id }}">
+			{{person.name_display}}
+
+			{% if person.numeration %}
+			{{ person.numeration }}
+			{% endif %}
+
+			{% if person.title %}
+			, {{ person.title }}
+			{% endif %}
+			</a></td>
+
+			<td>{{ person.year_1 }}-{{ person.year_2 }}
+		</tr>
+		{% endfor %}
+		</table>
+	</div>
+{% endblock %}
+
+
